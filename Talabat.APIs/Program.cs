@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Talabat.APIs.Errors;
@@ -5,9 +6,11 @@ using Talabat.APIs.Extensions;
 using Talabat.APIs.Helpers;
 using Talabat.APIs.MiddleWares;
 using Talabat.Core.Entities;
+using Talabat.Core.Entities.Identity;
 using Talabat.Core.Repositories.Contract;
 using Talabat.Repository;
 using Talabat.Repository.Data;
+using Talabat.Repository.Identity;
 
 namespace Talabat.APIs
 {
@@ -31,6 +34,8 @@ namespace Talabat.APIs
 			var services= scope.ServiceProvider;
 
 			var _dbContext = services.GetRequiredService<StoreContext>();
+
+			var _IdentitydbContext = services.GetRequiredService<ApplicationIdentityDbContext>();
 			// Ask CLR for Creating Object from DbContext Explicitly
 
 			var loggerFactory = services.GetRequiredService<ILoggerFactory>();
@@ -41,6 +46,12 @@ namespace Talabat.APIs
 				await _dbContext.Database.MigrateAsync();   // Update-Database
 
 				await StoreContextSeed.SeedAsync(_dbContext); // Data Seeding
+
+				await _IdentitydbContext.Database.MigrateAsync();// Update-Database
+
+				var _userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+				
+				await ApplicationIdentityContextSeed.SeedUsersAsync(_userManager);
 			}
 			catch (Exception ex)
 			{

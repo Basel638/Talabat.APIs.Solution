@@ -6,6 +6,16 @@ using Talabat.Repository.Data;
 using Talabat.Repository;
 using Microsoft.EntityFrameworkCore;
 using Talabat.APIs.Errors;
+using StackExchange.Redis;
+using Talabat.Repository.Identity;
+using Talabat.Core.Entities.Identity;
+using Microsoft.AspNetCore.Identity;
+using Talabat.Core.Services.Contract;
+using Talabat.Service.AuthService;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Newtonsoft.Json;
 
 namespace Talabat.APIs.Extensions
 {
@@ -14,8 +24,10 @@ namespace Talabat.APIs.Extensions
 		public static IServiceCollection AddApplicationServices(this IServiceCollection services, WebApplicationBuilder webApplicationBuilder)
 		{
 			// Add services to the DI container.
-
-			services.AddControllers();
+			services.AddControllers().AddNewtonsoftJson(options =>
+			{
+				options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+			});
 			// Register Required Web APIs Services to the DI Container
 
 
@@ -32,11 +44,23 @@ namespace Talabat.APIs.Extensions
 
 			});
 
+
+			services.AddSingleton<IConnectionMultiplexer>((serviceProvider) =>
+			{
+				var connection = webApplicationBuilder.Configuration.GetConnectionString("Redis");
+				return ConnectionMultiplexer.Connect(connection);
+
+			});
+
 			services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+
+			services.AddScoped(typeof(IBasketRepository), typeof(BasketRepository));
+
 
 			//services.AddAutoMapper(M => M.AddProfile(new MappingProfiles()));
 			services.AddAutoMapper(typeof(MappingProfiles));
 
+			services.AddScoped(typeof(IAuthService), typeof(AuthService));
 
 			services.Configure<ApiBehaviorOptions>(options => {
 				options.InvalidModelStateResponseFactory = (actionContext) =>
@@ -54,6 +78,49 @@ namespace Talabat.APIs.Extensions
 				};
 
 			});
+
+
+			services.AddDbContext<ApplicationIdentityDbContext>(options =>
+			{
+				options.UseSqlServer(webApplicationBuilder.Configuration.GetConnectionString("IdentityConnection"));
+			});
+
+
+			services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+			{
+
+
+			}).AddEntityFrameworkStores<ApplicationIdentityDbContext>(); ;
+
+
+			#region Add AuthServices
+			services.AddAuthentication(options =>
+			{
+				options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+				options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
+
+			}).AddJwtBearer(options =>
+			{
+				options.TokenValidationParameters = new TokenValidationParameters()
+				{
+					ValidateIssuer = true,
+					ValidIssuer = webApplicationBuilder.Configuration["JWT:ValidIssuer"],
+					ValidateAudience = true,
+					ValidAudience = webApplicationBuilder.Configuration["JWT:ValidAudience"],
+					ValidateIssuerSigningKey = true,
+					IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(webApplicationBuilder.Configuration["JWT:AuthKey"] ?? string.Empty)),
+					ValidateLifetime = true,
+					ClockSkew = TimeSpan.Zero,
+
+				};
+			}); 
+			#endregion
+
+
+
+
+
 			return services;
 		}
 	}
