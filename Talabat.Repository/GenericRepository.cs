@@ -15,7 +15,7 @@ namespace Talabat.Repository
 	{
 		private readonly StoreContext _dbContext;
 
-		public GenericRepository(StoreContext dbContext) // Ask CLR for creating object from dbcontext Implicitly
+		public GenericRepository(StoreContext dbContext)
         {
 			_dbContext = dbContext;
 		}
@@ -29,7 +29,7 @@ namespace Talabat.Repository
 			return await _dbContext.Set<T>().AsNoTracking().ToListAsync();
 		}
 
-		public async Task<T?> GetAsync(int id)
+		public async Task<T?> GetByIdAsync(int id)
 		{
 
 			//if (typeof(T) == typeof(Product))
@@ -58,5 +58,14 @@ namespace Talabat.Repository
 		{
 			return await ApplySpecifications(spec).CountAsync();
 		}
+
+		public async Task AddAsync(T entity)
+		=> await _dbContext.Set<T>().AddAsync(entity);
+
+		public void Update(T entity)
+		=> _dbContext.Set<T>().Update(entity);
+
+		public void Delete(T entity)
+		=> _dbContext.Set<T>().Remove(entity);	
 	}
 }

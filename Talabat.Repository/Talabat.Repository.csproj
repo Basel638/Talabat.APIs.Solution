@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Data\Config\ProductConfig\" />
     <Folder Include="Identity\Config\" />
     <Folder Include="Identity\DataSeed\" />
     <Folder Include="Identity\Migrations\" />
