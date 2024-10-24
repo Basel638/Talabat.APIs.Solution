@@ -20,6 +20,7 @@ using Talabat.Core;
 using Talabat.Service.OrderService;
 using Talabat.Service.ProductService;
 using Talabat.Service.PaymentService;
+using Talabat.Service.CacheService;
 
 namespace Talabat.APIs.Extensions
 {
@@ -35,6 +36,8 @@ namespace Talabat.APIs.Extensions
 					policyOptions.AllowAnyHeader().AllowAnyMethod().WithOrigins(webApplicationBuilder.Configuration["FrontBaseUrl"]);
 				});
 			});
+
+			services.AddSingleton(typeof(IResponseCacheService), typeof(ResponseCacheService));
 
 			services.AddScoped(typeof(IPaymentService), typeof(PaymentService));
 

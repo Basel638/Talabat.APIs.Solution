@@ -8,7 +8,7 @@ namespace Talabat.Core.Specifications.Product_Specs
 {
 	public class ProductSpecParams
 	{
-		private const int MaxPageSize = 10;
+		private const int MaxPageSize = 18;
 
 
 		public string? Sort { get; set; }

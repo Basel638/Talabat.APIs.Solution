@@ -30,6 +30,9 @@ namespace Talabat.APIs.Controllers
 			_mapper = mapper;
 			_productService = productService;
 		}
+
+
+		[CachedAttribute(600)]
 		// api/products
 		[HttpGet]
 		public async Task<ActionResult<Pagination<ProductToReturnDtos>>> GetProducts([FromQuery] ProductSpecParams specParams)
@@ -65,7 +68,7 @@ namespace Talabat.APIs.Controllers
 
 
 
-
+		[CachedAttribute(600)]
 		[HttpGet("brands")] // GET : /api/products/brands
 
 		public async Task<ActionResult<IReadOnlyList<ProductBrand>>> GetBrands()
@@ -73,9 +76,9 @@ namespace Talabat.APIs.Controllers
 			var brands = await _productService.GetBrandsAsync();
 			return Ok(brands);
 		}
-
+		
+		[CachedAttribute(600)]
 		[HttpGet("categories")] //GET : /api/products/categories
-
 		public async Task<ActionResult<IReadOnlyList<ProductCategory>>> GetCategories()
 		{
 			var categories = await _productService.GetCategoriesAsync();
