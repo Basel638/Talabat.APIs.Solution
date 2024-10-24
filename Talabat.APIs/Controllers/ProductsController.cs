@@ -30,7 +30,6 @@ namespace Talabat.APIs.Controllers
 			_mapper = mapper;
 			_productService = productService;
 		}
-		[Authorize]
 		// api/products
 		[HttpGet]
 		public async Task<ActionResult<Pagination<ProductToReturnDtos>>> GetProducts([FromQuery] ProductSpecParams specParams)

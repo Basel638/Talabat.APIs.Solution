@@ -123,5 +123,18 @@ namespace Talabat.APIs.Controllers
 			return Ok(address);
 		}
 
+
+		[HttpGet("emailexists")]
+		public async Task<IActionResult>  emailexists([FromQuery] string email)
+		{
+			var user = await  _userManager.FindByEmailAsync(email);
+
+			if (user is not null)
+			{
+				return BadRequest() ;
+			}
+			else
+				return Ok();
+		}
 	}
 }

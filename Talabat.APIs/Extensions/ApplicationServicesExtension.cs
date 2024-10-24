@@ -19,6 +19,7 @@ using Newtonsoft.Json;
 using Talabat.Core;
 using Talabat.Service.OrderService;
 using Talabat.Service.ProductService;
+using Talabat.Service.PaymentService;
 
 namespace Talabat.APIs.Extensions
 {
@@ -27,7 +28,15 @@ namespace Talabat.APIs.Extensions
 		public static IServiceCollection AddApplicationServices(this IServiceCollection services, WebApplicationBuilder webApplicationBuilder)
 		{
 
+			services.AddCors( options =>
+			{
+				options.AddPolicy("MyPolicy", policyOptions =>
+				{
+					policyOptions.AllowAnyHeader().AllowAnyMethod().WithOrigins(webApplicationBuilder.Configuration["FrontBaseUrl"]);
+				});
+			});
 
+			services.AddScoped(typeof(IPaymentService), typeof(PaymentService));
 
 			services.AddScoped(typeof(IOrderService), typeof(OrderService));
 

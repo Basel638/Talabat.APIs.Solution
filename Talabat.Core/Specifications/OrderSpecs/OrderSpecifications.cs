@@ -27,5 +27,9 @@ namespace Talabat.Core.Specifications.OrderSpecs
 
 
 		}
-	}
+
+
+        
+
+    }
 }

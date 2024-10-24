@@ -76,6 +76,8 @@ namespace Talabat.APIs
 
 			app.UseHttpsRedirection();
 
+			app.UseCors("MyPolicy");
+
 			app.UseStaticFiles();
 
 			app.MapControllers();
