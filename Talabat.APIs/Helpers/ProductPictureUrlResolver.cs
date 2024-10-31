@@ -17,7 +17,7 @@ namespace Talabat.APIs.Helpers
 		{
 			if(!string.IsNullOrEmpty(source.PictureUrl)) {
 
-				return $"{_configuration["ApiBaseUrl"]}/{source.PictureUrl}";
+				return $"{_configuration["ApiBaseUrl"]}/{source.PictureUrl}.png";
 			}
 
 			return string.Empty ;

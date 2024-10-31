@@ -1,13 +1,16 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using Talabat.APIs.Dtos;
 using Talabat.APIs.Errors;
 using Talabat.Core.Entities;
+using Talabat.Core.Entities.Identity;
 using Talabat.Core.Entities.Order_Aggregate;
 using Talabat.Core.Services.Contract;
+using Address = Talabat.Core.Entities.Order_Aggregate.Address;
 
 namespace Talabat.APIs.Controllers
 {
@@ -15,12 +18,13 @@ namespace Talabat.APIs.Controllers
 	{
 		private readonly IOrderService _orderService;
 		private readonly IMapper _mapper;
+		//private readonly UserManager<ApplicationUser> _userManager;
 
-  
-        public OrdersController(IOrderService orderService, IMapper mapper)
+		public OrdersController(IOrderService orderService, IMapper mapper/*, UserManager<ApplicationUser> userManager*/)
 		{
 			_orderService = orderService;
 			_mapper = mapper;
+			//_userManager = userManager;
 		}
 
 		[Authorize]
@@ -34,6 +38,8 @@ namespace Talabat.APIs.Controllers
 			var buyeremail = User.FindFirstValue(ClaimTypes.Email) ?? string.Empty;
 
 			var address = _mapper.Map<AddressDto, Address>(orderDto.ShippingAddress);
+
+			//var user = await _userManager.FindByEmailAsync(buyeremail);
 
 			var order = await _orderService.CreateOrderAsync(buyeremail, orderDto.BasketId, orderDto.DeliveryMethodId, address);
 
