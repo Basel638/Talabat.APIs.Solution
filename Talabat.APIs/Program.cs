@@ -1,8 +1,16 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Talabat.APIs.Errors;
+using Talabat.APIs.Extensions;
+using Talabat.APIs.Helpers;
+using Talabat.APIs.MiddleWares;
 using Talabat.Core.Entities;
+using Talabat.Core.Entities.Identity;
 using Talabat.Core.Repositories.Contract;
 using Talabat.Repository;
 using Talabat.Repository.Data;
+using Talabat.Repository.Identity;
 
 namespace Talabat.APIs
 {
@@ -13,27 +21,10 @@ namespace Talabat.APIs
 			var webApplicationBuilder = WebApplication.CreateBuilder(args);
 
 			#region Configure Services
-			// Add services to the DI container.
-
-			webApplicationBuilder.Services.AddControllers();
-			// Register Required Web APIs Services to the DI Container
 
 
-
-			// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-			webApplicationBuilder.Services.AddEndpointsApiExplorer();
-			webApplicationBuilder.Services.AddSwaggerGen(); 
-
-
-
-			webApplicationBuilder.Services.AddDbContext<StoreContext>(options =>
-			{
-				options.UseSqlServer(webApplicationBuilder.Configuration.GetConnectionString("DefaultConnection"));
-			
-			});
-
-			webApplicationBuilder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-
+			//ApplicationServicesExtension.AddApplicationServices(webApplicationBuilder, webApplicationBuilder.Services);
+			webApplicationBuilder.Services.AddApplicationServices(webApplicationBuilder);
 			#endregion
 
 			var app = webApplicationBuilder.Build();
@@ -43,6 +34,8 @@ namespace Talabat.APIs
 			var services= scope.ServiceProvider;
 
 			var _dbContext = services.GetRequiredService<StoreContext>();
+
+			var _IdentitydbContext = services.GetRequiredService<ApplicationIdentityDbContext>();
 			// Ask CLR for Creating Object from DbContext Explicitly
 
 			var loggerFactory = services.GetRequiredService<ILoggerFactory>();
@@ -53,6 +46,12 @@ namespace Talabat.APIs
 				await _dbContext.Database.MigrateAsync();   // Update-Database
 
 				await StoreContextSeed.SeedAsync(_dbContext); // Data Seeding
+
+				await _IdentitydbContext.Database.MigrateAsync();// Update-Database
+
+				var _userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+				
+				await ApplicationIdentityContextSeed.SeedUsersAsync(_userManager);
 			}
 			catch (Exception ex)
 			{
@@ -62,16 +61,24 @@ namespace Talabat.APIs
 
 			#region Configure Kestrel Middlewares
 
+			app.UseMiddleware<ExceptionMiddleware>();
 			// Configure the HTTP request pipeline.
 			if (app.Environment.IsDevelopment())
 			{
+
+
+			}
 				app.UseSwagger();
 				app.UseSwaggerUI();
-			}
+
+
+			app.UseStatusCodePagesWithReExecute("/errors/{0}");
 
 			app.UseHttpsRedirection();
 
-			
+			app.UseCors("MyPolicy");
+
+			app.UseStaticFiles();
 
 			app.MapControllers();
 
